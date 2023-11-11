@@ -49,10 +49,12 @@ fn password_checker(request: PasswordRequest) -> Digest {
 
 #[cfg(test)]
 mod tests {
+    use std::panic;
+
     use password_checker_core::PasswordRequest;
 
     #[test]
-    fn main() {
+    fn valid_password() {
         const TEST_SALT: [u8; 32] = [0u8; 32];
         const TEST_PASSWORD: &str = "S00perSecr1t!!!";
 
@@ -62,5 +64,21 @@ mod tests {
         };
 
         super::password_checker(request);
+    }
+
+    #[test]
+    fn invalid_password() {
+        const TEST_SALT: [u8; 32] = [0u8; 32];
+        const TEST_PASSWORD: &str = "insecure";
+
+        let result = panic::catch_unwind(|| {
+            let request = PasswordRequest {
+                password: TEST_PASSWORD.into(),
+                salt: TEST_SALT,
+            };
+            super::password_checker(request);
+        });
+
+        assert!(result.is_err());
     }
 }
